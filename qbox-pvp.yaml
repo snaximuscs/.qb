@@ -214,15 +214,15 @@ tasks:
 - action: replace_string
   file: ./server.cfg
   mode: literal
-  search: ensure [npwd-apps]
+  search: '(?<![^\n])ensure \[npwd-apps\](?=[ \t\r\n]|$)'
   replace: '# ensure [npwd-apps]'
 - action: replace_string
   file: ./server.cfg
   mode: literal
-  search: ensure qbx_npwd
+  search: '(?<![^\n])ensure qbx_npwd(?=[ \t\r\n]|$)'
   replace: '# ensure qbx_npwd'
 - action: replace_string
   file: ./server.cfg
   mode: literal
-  search: ensure npwd
+  search: '(?<![^\n])ensure npwd(?=[ \t\r\n]|$)'
   replace: '# ensure npwd'
