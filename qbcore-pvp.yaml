@@ -1,0 +1,170 @@
+$engine: 3
+$onesync: on
+name: QBCore PvP 服务器基础框架
+version: 0.0.1
+author: Snaximusss+
+description: 由 Snaximusss+ 打造的轻量级QBCore PvP服务器基础框架包含角色创建出生点背包和语音聊天功能。
+tasks:
+  - action: download_github
+    src: https://github.com/qbcore-fivem/txAdminRecipe
+    ref: main
+    dest: ./tmp/qbcore
+
+  - action: write_file
+    file: ./server.cfg
+    data: |
+      sv_licenseKey "{{svLicense}}"
+      sv_maxclients {{maxClients}}
+      set mysql_connection_string "{{dbConnectionString}}"
+      {{serverEndpoints}}
+
+      sv_enforceGameBuild 3095 #DLC The Chop Shop
+      set resources_useSystemChat true
+      set steam_webApiKey "none"
+
+      # Voice config
+      setr voice_useNativeAudio true
+      setr voice_defaultCycle "GRAVE"
+      setr voice_defaultVolume 0.3
+      setr voice_enableRadioAnim 1
+      setr voice_syncData 1
+      setr voice_useSendingRangeOnly false
+
+      # QBCore locale config
+      setr qb_locale "en"
+
+      # QBCore UseTarget
+      setr UseTarget false
+
+      # These resources will start by default
+      ensure mapmanager
+      ensure chat
+      ensure spawnmanager
+      ensure sessionmanager
+      ensure basic-gamemode
+      ensure hardcap
+      ensure baseevents
+
+      # QBCore & Extra stuff
+      ensure oxmysql
+      ensure qb-core
+      ensure bob74_ipl
+      ensure PolyZone
+      ensure progressbar
+      ensure qb-weapons
+      ensure qb-inventory
+      ensure qb-clothing
+      ensure qb-weathersync
+      ensure qb-spawn
+      ensure qb-multicharacter
+      ensure pma-voice
+
+      ## Permissions
+      add_ace group.admin command allow # allow all commands
+      {{addPrincipalsMaster}}
+
+      add_ace resource.qb-core command allow # Allow qb-core to execute commands
+      add_ace qbcore.god command allow # Allow all commands
+      add_principal qbcore.god group.admin # Allow gods access to the main admin group used to get all default permissions
+      add_principal qbcore.god qbcore.admin # Allow gods access to admin commands
+      add_principal qbcore.admin qbcore.mod # Allow admins access to mod commands
+
+  - action: connect_database
+
+  - action: query_database
+    file: ./tmp/qbcore/qbcore.sql
+
+  - action: download_github
+    src: https://github.com/citizenfx/cfx-server-data
+    subpath: resources
+    dest: ./resources/[cfx-default]
+
+  - action: download_file
+    path: ./tmp/files/oxmysql.zip
+    url: https://github.com/overextended/oxmysql/releases/download/v2.14.1/oxmysql.zip
+
+  - action: unzip
+    dest: ./resources/[standalone]
+    src: ./tmp/files/oxmysql.zip
+
+  - action: download_github
+    dest: ./resources/[standalone]/bob74_ipl
+    ref: master
+    src: https://github.com/qbcore-fivem/bob74_ipl
+
+  - action: download_github
+    dest: ./resources/[standalone]/progressbar
+    ref: main
+    src: https://github.com/qbcore-fivem/progressbar
+
+  - action: download_github
+    dest: ./resources/[standalone]/PolyZone
+    ref: master
+    src: https://github.com/qbcore-fivem/PolyZone
+
+  - action: download_github
+    dest: ./resources/[voice]/pma-voice
+    ref: main
+    src: https://github.com/AvarianKnight/pma-voice
+
+  - action: download_github
+    dest: ./resources/[qb]/qb-core
+    ref: main
+    src: https://github.com/qbcore-fivem/qb-core
+
+  - action: download_github
+    dest: ./resources/[qb]/qb-multicharacter
+    ref: main
+    src: https://github.com/qbcore-fivem/qb-multicharacter
+
+  - action: download_github
+    dest: ./resources/[qb]/qb-inventory
+    ref: main
+    src: https://github.com/qbcore-fivem/qb-inventory
+
+  - action: download_github
+    dest: ./resources/[qb]/qb-weathersync
+    ref: main
+    src: https://github.com/qbcore-fivem/qb-weathersync
+
+  - action: download_github
+    dest: ./resources/[qb]/qb-weapons
+    ref: main
+    src: https://github.com/qbcore-fivem/qb-weapons
+
+  - action: download_github
+    dest: ./resources/[qb]/qb-spawn
+    ref: main
+    src: https://github.com/qbcore-fivem/qb-spawn
+
+  - action: download_github
+    dest: ./resources/[qb]/qb-clothing
+    ref: main
+    src: https://github.com/qbcore-fivem/qb-clothing
+
+  - action: replace_string
+    file: ./resources/[qb]/qb-multicharacter/fxmanifest.lua
+    mode: literal
+    search: "    '@qb-apartments/config\\.lua',"
+    replace: "    -- Apartment configuration omitted for the PvP setup."
+
+  - action: replace_string
+    file: ./resources/[qb]/qb-spawn/fxmanifest.lua
+    mode: literal
+    search: "    '@qb-apartments/config\\.lua',"
+    replace: "    -- Apartment configuration omitted for the PvP setup."
+
+  - action: replace_string
+    file: ./resources/[qb]/qb-spawn/client.lua
+    mode: literal
+    search: "PostSpawnPlayer\\(\\)"
+    replace: "PostSpawnPlayer(ped)"
+
+  - action: replace_string
+    file: ./resources/[qb]/qb-multicharacter/server.lua
+    mode: literal
+    search: "QBCore\\.Functions\\.GetIdentifier\\(src, 'discord'\\):gsub"
+    replace: "(QBCore.Functions.GetIdentifier(src, 'discord') or 'unknown'):gsub"
+
+  - action: remove_path
+    path: ./tmp
